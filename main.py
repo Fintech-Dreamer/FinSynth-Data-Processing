@@ -9,7 +9,12 @@ import pandas as pd
 from utils import (
     pdf_to_json,
     html_to_json,
-    csv_to_json,
+    txt_md_to_json,
+    doc_docx_to_json,
+    ppt_pptx_to_json,
+    image_to_csv,
+    xml_to_json,
+    wav_to_json,
     generate_questions_on_chatbot,
     generate_questions_on_fraud,
     generate_questions_on_compliance,
@@ -48,8 +53,18 @@ class FileConverter:
                 self.json_lists.append(pdf_to_json(path))
             elif ext.lower() == ".html" or "http" in path:
                 self.json_lists.append(html_to_json(path))
-            elif ext.lower() == ".csv":
-                self.json_lists.append(csv_to_json(path))
+            elif ext.lower() == "txt" and ext.lower() == "md":
+                self.json_lists.append(txt_md_to_json(path))
+            elif ext.lower() == ".doc" or ext.lower() == ".docx":
+                self.json_lists.append(doc_docx_to_json(path))
+            elif ext.lower() == ".ppt" or ext.lower() == ".pptx":
+                self.json_lists.append(ppt_pptx_to_json(path))
+            elif ext.lower() == ".jpg" or ext.lower() == ".png" or ext.lower() == ".jpeg":
+                self.json_lists.append(image_to_csv(path))
+            elif ext.lower() == ".xml":
+                self.json_lists.append(xml_to_json(path))
+            elif ext.lower() == ".wav":
+                self.json_lists.append(wav_to_json(path))
             else:
                 print(f"Unsupported file type: {path}")
                 self.json_lists.append(None)
@@ -123,7 +138,9 @@ class FileConverter:
 
 
 if __name__ == "__main__":
-    file_converter = FileConverter([])
-    file_converter.read_json_lists("output.json_1.json")
-    QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
-    file_converter.save_QA_pairs()
+    file_converter = FileConverter(["a.wav"])
+    file_converter.file_to_json_lists()
+    file_converter.save_json_lists()
+    # file_converter.read_json_lists("output.json_1.json")
+    # file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+    # file_converter.save_QA_pairs()

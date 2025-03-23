@@ -2,4 +2,13 @@ params.py
 *.csv
 *.json
 *.pdf
+*.txt
+*.md
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.png
+*.xml
+*.wav
 __pycache__

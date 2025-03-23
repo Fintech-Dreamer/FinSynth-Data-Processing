@@ -3,11 +3,20 @@ import os
 import warnings
 import base64
 
-import pandas as pd
+import speech_recognition as sr
+from pydub import AudioSegment
+from pydub.silence import split_on_silence
 from PIL import Image
 from pydantic import BaseModel, Field
 from unstructured.partition.html import partition_html
 from unstructured.partition.pdf import partition_pdf
+from unstructured.partition.text import partition_text
+from unstructured.partition.doc import partition_doc
+from unstructured.partition.docx import partition_docx
+from unstructured.partition.ppt import partition_ppt
+from unstructured.partition.pptx import partition_pptx
+from unstructured.partition.image import partition_image
+from unstructured.partition.xml import partition_xml
 from typing import List
 from bs4 import BeautifulSoup
 from langchain_core.prompts import ChatPromptTemplate
@@ -67,20 +76,98 @@ def html_to_json(path: str) -> list:
         return e.message
 
 
-def csv_to_json(file_path: str) -> list:
-    """将csv文件转换为json list:
-    file_path:csv文件路径
-    min_words:筛选掉词数小于min_words的元素
-    返回json list
-    """
+def txt_md_to_json(file_path: str) -> list:
     try:
-        # 假设你的数据已经被读取到一个DataFrame中，命名为df
-        df = pd.read_csv(file_path)  # 读取CSV文件
-        output_list = df.to_dict(orient="records")  # 转换为字典
+        elements = partition_text(file_path)
+        output_list = [element.to_dict() for element in elements]
         return output_list
-    except Exception as e:
+    except KeyError as e:
         print(e)
-        return e
+        return e.message
+
+
+def doc_docx_to_json(file_path: str) -> list:
+    try:
+        if file_path.endswith(".doc"):
+            elements = partition_doc(file_path)
+        elif file_path.endswith(".docx"):
+            elements = partition_docx(file_path)
+        output_list = [element.to_dict() for element in elements]
+        return output_list
+    except KeyError as e:
+        print(e)
+        return e.message
+
+
+def ppt_pptx_to_json(file_path: str) -> list:
+    try:
+        if file_path.endswith(".ppt"):
+            elements = partition_ppt(file_path)
+        elif file_path.endswith(".pptx"):
+            elements = partition_pptx(file_path)
+        output_list = [element.to_dict() for element in elements]
+        return output_list
+    except KeyError as e:
+        print(e)
+        return e.message
+
+
+def image_to_csv(file_path: str) -> list:
+    try:
+        elements = partition_image(file_path)
+        output_list = [element.to_dict() for element in elements]
+        return output_list
+    except KeyError as e:
+        print(e)
+        return e.message
+
+
+def xml_to_json(file_path: str) -> list:
+    try:
+        elements = partition_xml(file_path)
+        output_list = [element.to_dict() for element in elements]
+        return output_list
+    except KeyError as e:
+        print(e)
+        return e.message
+
+
+def split_audio_chunks(audio_path, chunk_sec=10):
+    """将音频分割为固定时长的块（单位：秒）"""
+    audio = AudioSegment.from_wav(audio_path)
+    chunk_length = chunk_sec * 1000  # 转换为毫秒
+    return [audio[i : i + chunk_length] for i in range(0, len(audio), chunk_length)]
+
+
+def wav_to_json(audio_path, chunk_sec=10):
+    """带分块时间戳的语音识别"""
+    r = sr.Recognizer()
+    result = []
+
+    # 分割音频文件
+    chunks = split_audio_chunks(audio_path, chunk_sec)
+
+    for index, chunk in enumerate(chunks):
+        # 保存临时分块文件
+        chunk_path = f"temp_chunk_{index}.wav"
+        chunk.export(chunk_path, format="wav")
+
+        # 计算时间戳
+        start_time = index * chunk_sec
+        end_time = (index + 1) * chunk_sec
+
+        with sr.AudioFile(chunk_path) as source:
+            audio = r.record(source)
+
+            try:
+                text = r.recognize_google(audio, language="zh-CN")
+                result.append({"text": text, "start_time": start_time, "end_time": end_time})
+            except sr.UnknownValueError:
+                print(f"无法识别 {start_time}-{end_time}秒的音频")
+            except sr.RequestError as e:
+                print(f"服务错误：{e}")
+
+    return result
 
 
 def generate_questions_on_chatbot(json_list: list, openai_api_key: str, base_url: str, model: str, model_picture: str, lable: int, embed_model_name: str) -> list:
@@ -370,11 +457,11 @@ def text_retriever(query: str, vectorstore) -> list[str]:
 
 def generate_answer_only(Q_B_list: list[str, str], openai_api_key: str, base_url: str, model: str) -> list[str, str]:
     prompt_list = [
-        f"""Give me the simple answer based on the question and  background 
-    Question:{Q_B["question"]}
-    Background:{Q_B["docs_list"]}
-    Notice:Your output format must be answer:
-    """
+        f"""Give me the simple answer based on the question and background 
+        Question:{Q_B["question"]}
+        Background:{Q_B["docs_list"]}
+        Notice:Your output format must be answer:
+        """
         for Q_B in Q_B_list
     ]
 
@@ -387,3 +474,8 @@ def generate_answer_only(Q_B_list: list[str, str], openai_api_key: str, base_url
     # 调用 batch 方法并设置并发数
     responses = chat.batch(messages_list, config={"max_concurrency": 5})
     return [response.content for response in responses]
+
+
+if __name__ == "__main__":
+    a = ("a.wav")
+    print(a)

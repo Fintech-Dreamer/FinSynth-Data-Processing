@@ -34,34 +34,34 @@ Modify the files
 
        ```python
            file_converter = FileConverter(["demo.pdf"])
-           jsons = file_converter.file_to_json_lists()
-           QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+           file_converter.file_to_json_lists()
+           file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
        ```
 
    - Run multiple files (Generate chatbot dataset)
 
      ```python
          file_converter = FileConverter(["demo.pdf","demo.csv"])
-         jsons = file_converter.file_to_json_lists()
-         QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+         file_converter.file_to_json_lists()
+         file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
      ```
 
    - Generate fraud detection or contract compliance dataset
 
      ```python
          file_converter = FileConverter(["demo.pdf"])
-         jsons = file_converter.file_to_json_lists()
-         QA_pairs = file_converter.json_lists_to_QA_pairs("fraud", time_sleep=0)
-         QA_pairs = file_converter.json_lists_to_QA_pairs("compliance", time_sleep=0)
+         file_converter.file_to_json_lists()
+         file_converter.json_lists_to_QA_pairs("fraud", time_sleep=0)
+         # file_converter.json_lists_to_QA_pairs("compliance", time_sleep=0)
      ```
 
    - Save the generated structured json and final question-answer csv
 
      ```python
-         file_converter = FileConverter(["NVIDIA54.pdf", "NVIDIA54.pdf"])
-         jsons = file_converter.file_to_json_lists()
+         file_converter = FileConverter(["demo.pdf","demo.csv"])
+         file_converter.file_to_json_lists()
          file_converter.save_json_lists()
-         QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+         file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
          file_converter.save_QA_pairs()
      ```
 
@@ -70,13 +70,24 @@ Modify the files
      ```python
          file_converter = FileConverter([])
          file_converter.read_json_lists("output.json_1.json")
-         QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+         file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
          file_converter.save_QA_pairs()
      ```
 
 ## Others
 
 Running the file may require downloading models from huggingface, which might need a VPN.
+
+File types that can be converted:
+
+- Text files (.txt, .md, etc.)
+- PDF documents
+- Word files (.doc, .docx)
+- PowerPoint presentations (.ppt, .pptx)
+- Image files (.jpg, .png, etc.)
+- HTML webpages
+- XML files
+- Audio files (.WAV)
 
 ### Fine-tuning Models
 

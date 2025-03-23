@@ -36,34 +36,34 @@ python main.py
 
        ```python
            file_converter = FileConverter(["demo.pdf"])
-           jsons = file_converter.file_to_json_lists()
-           QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+           file_converter.file_to_json_lists()
+           file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
        ```
    
    - 运行多个文件（生成聊天机器人数据集）
    
      ```python
          file_converter = FileConverter(["demo.pdf","demo.csv"])
-         jsons = file_converter.file_to_json_lists()
-         QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+         file_converter.file_to_json_lists()
+         file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
      ```
    
    - 生成欺诈检测或合约法规数据集
    
      ```python
          file_converter = FileConverter(["demo.pdf"])
-         jsons = file_converter.file_to_json_lists()
+         file_converter.file_to_json_lists()
          QA_pairs = file_converter.json_lists_to_QA_pairs("fraud", time_sleep=0)
-         QA_pairs = file_converter.json_lists_to_QA_pairs("compliance", time_sleep=0)
+         # QA_pairs = file_converter.json_lists_to_QA_pairs("compliance", time_sleep=0)
      ```
    
    - 将生成的结构化json和最终问答对csv保存
    
      ```python
-         file_converter = FileConverter(["NVIDIA54.pdf", "NVIDIA54.pdf"])
-         jsons = file_converter.file_to_json_lists()
+         file_converter = FileConverter(["demo.pdf","demo.csv"])
+         file_converter.file_to_json_lists()
          file_converter.save_json_lists()
-         QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+         file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
          file_converter.save_QA_pairs()
      ```
    
@@ -72,7 +72,7 @@ python main.py
      ```python
          file_converter = FileConverter([])
          file_converter.read_json_lists("output.json_1.json")
-         QA_pairs = file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
+         file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
          file_converter.save_QA_pairs()
      ```
    
@@ -80,6 +80,17 @@ python main.py
 ## 其他
 
 运行文件需要从huggingface下载模型可能需要VPN
+
+可以转化的数据类型：
+
+- 文本文件 (.txt, .md等)
+- PDF文档
+- Word文档 (.doc, .docx)
+- PowerPoint演示文稿 (.ppt, .pptx)
+- 图像文件 (.jpg, .png等)
+- HTML网页
+- XML文件
+- 音频文件(.WAV)
 
 ### 微调模型
 

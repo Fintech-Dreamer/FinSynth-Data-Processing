@@ -10,3 +10,5 @@ Pillow==11.1.0
 pydantic==2.10.6
 unstructured[all-docs] 
 sentence-transformers
+SpeechRecognition
+pydub
