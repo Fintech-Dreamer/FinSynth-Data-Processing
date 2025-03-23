@@ -90,7 +90,7 @@ python main.py
 - 图像文件 (.jpg, .png等)
 - HTML网页
 - XML文件
-- 音频文件(.WAV)
+- 音频文件
 
 ### 微调模型
 

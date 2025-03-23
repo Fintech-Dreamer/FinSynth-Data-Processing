@@ -14,7 +14,7 @@ from utils import (
     ppt_pptx_to_json,
     image_to_csv,
     xml_to_json,
-    wav_to_json,
+    audio_to_json,
     generate_questions_on_chatbot,
     generate_questions_on_fraud,
     generate_questions_on_compliance,
@@ -63,8 +63,8 @@ class FileConverter:
                 self.json_lists.append(image_to_csv(path))
             elif ext.lower() == ".xml":
                 self.json_lists.append(xml_to_json(path))
-            elif ext.lower() == ".wav":
-                self.json_lists.append(wav_to_json(path))
+            elif ext.lower() in [".wav", ".mp3", ".ogg", ".flac", ".aac", ".m4a"]:
+                self.json_lists.append(audio_to_json(path))
             else:
                 print(f"Unsupported file type: {path}")
                 self.json_lists.append(None)
@@ -138,7 +138,7 @@ class FileConverter:
 
 
 if __name__ == "__main__":
-    file_converter = FileConverter(["a.wav"])
+    file_converter = FileConverter(["2025-03-23 19-50-56.wav"])
     file_converter.file_to_json_lists()
     file_converter.save_json_lists()
     # file_converter.read_json_lists("output.json_1.json")

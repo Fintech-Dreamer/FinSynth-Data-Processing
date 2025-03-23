@@ -11,4 +11,9 @@ params.py
 *.png
 *.xml
 *.wav
+*.mp3
+*.ogg
+*.flac
+*.aac
+*.m4a
 __pycache__

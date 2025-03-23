@@ -87,7 +87,7 @@ File types that can be converted:
 - Image files (.jpg, .png, etc.)
 - HTML webpages
 - XML files
-- Audio files (.WAV)
+- Audio files
 
 ### Fine-tuning Models
 

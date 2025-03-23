@@ -3,11 +3,14 @@ import os
 import warnings
 import base64
 
+
+# ========== 音频处理模块 ==========
 import speech_recognition as sr
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-from PIL import Image
-from pydantic import BaseModel, Field
+from tempfile import mkdtemp
+
+# ========== 文档解析模块 ==========
 from unstructured.partition.html import partition_html
 from unstructured.partition.pdf import partition_pdf
 from unstructured.partition.text import partition_text
@@ -17,15 +20,27 @@ from unstructured.partition.ppt import partition_ppt
 from unstructured.partition.pptx import partition_pptx
 from unstructured.partition.image import partition_image
 from unstructured.partition.xml import partition_xml
+
+# ========== 数据结构与验证模块 ==========
+from pydantic import BaseModel, Field
 from typing import List
-from bs4 import BeautifulSoup
+
+# ========== 大模型应用模块 ==========
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_openai import ChatOpenAI
 from langchain.schema import HumanMessage
+
+# ========== 向量数据库模块 ==========
 import chromadb
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+
+# ========== HTML/XML处理模块 ==========
+from bs4 import BeautifulSoup
+
+# ========== 图像处理模块 ==========
+from PIL import Image
 
 
 warnings.filterwarnings("ignore")
@@ -139,35 +154,65 @@ def split_audio_chunks(audio_path, chunk_sec=10):
     return [audio[i : i + chunk_length] for i in range(0, len(audio), chunk_length)]
 
 
-def wav_to_json(audio_path, chunk_sec=10):
-    """带分块时间戳的语音识别"""
-    r = sr.Recognizer()
-    result = []
+def audio_to_json(audio_path, language="zh-CN", silence_thresh=-40, min_silence_len=500, keep_silence=300, debug_mode=False):
+    """
+    将音频文件转换为带时间戳的结构化文本
 
-    # 分割音频文件
-    chunks = split_audio_chunks(audio_path, chunk_sec)
+    参数说明：
+    :param audio_path: 音频文件路径（支持mp3/wav等格式）
+    :param language: 识别语言（默认中文）
+    :param silence_thresh: 静音阈值(dBFS)，越小越敏感（-50~-35）
+    :param min_silence_len: 视为静音的最小持续时间（毫秒）
+    :param keep_silence: 分块前后保留的静音时长（毫秒）
+    :param debug_mode: 是否保留临时文件（默认False）
+    :return: 包含时间戳和文本的结构化列表
+    """
+    # 初始化组件
+    recognizer = sr.Recognizer()
+    temp_dir = mkdtemp()
+    results = []
 
-    for index, chunk in enumerate(chunks):
-        # 保存临时分块文件
-        chunk_path = f"temp_chunk_{index}.wav"
-        chunk.export(chunk_path, format="wav")
+    try:
+        # 加载并统一音频格式
+        audio = AudioSegment.from_file(audio_path).set_frame_rate(16000).set_channels(1)
 
-        # 计算时间戳
-        start_time = index * chunk_sec
-        end_time = (index + 1) * chunk_sec
+        # 静音分块检测
+        chunks = split_on_silence(audio, min_silence_len=min_silence_len, silence_thresh=silence_thresh, keep_silence=keep_silence)
 
-        with sr.AudioFile(chunk_path) as source:
-            audio = r.record(source)
+        current_time = 0.0
+        for idx, chunk in enumerate(chunks):
+            # 计算时间戳
+            chunk_duration = len(chunk) / 1000.0
+            end_time = current_time + chunk_duration
 
+            # 保存临时分块
+            chunk_path = os.path.join(temp_dir, f"chunk_{idx}.wav")
+            chunk.export(chunk_path, format="wav")
+
+            # 语音识别
             try:
-                text = r.recognize_google(audio, language="zh-CN")
-                result.append({"text": text, "start_time": start_time, "end_time": end_time})
-            except sr.UnknownValueError:
-                print(f"无法识别 {start_time}-{end_time}秒的音频")
-            except sr.RequestError as e:
-                print(f"服务错误：{e}")
+                with sr.AudioFile(chunk_path) as source:
+                    audio_data = recognizer.record(source)
+                    text = recognizer.recognize_google(audio_data, language=language, show_all=True)
 
-    return result
+                    if text and "alternative" in text:
+                        best = text["alternative"][0]
+                        results.append({"start": round(current_time, 2), "end": round(end_time, 2), "text": best["transcript"], "confidence": round(best.get("confidence", 0), 2)})
+            except sr.UnknownValueError:
+                print(f"无法识别 {current_time:.1f}s-{end_time:.1f}s 的音频")
+            except sr.RequestError as e:
+                print(f"API请求失败: {e}")
+
+            current_time = end_time  # 更新时间指针
+
+    finally:
+        # 清理临时文件
+        if not debug_mode and os.path.exists(temp_dir):
+            for f in os.listdir(temp_dir):
+                os.remove(os.path.join(temp_dir, f))
+            os.rmdir(temp_dir)
+
+    return results
 
 
 def generate_questions_on_chatbot(json_list: list, openai_api_key: str, base_url: str, model: str, model_picture: str, lable: int, embed_model_name: str) -> list:
@@ -477,5 +522,5 @@ def generate_answer_only(Q_B_list: list[str, str], openai_api_key: str, base_url
 
 
 if __name__ == "__main__":
-    a = ("a.wav")
+    a = "a.wav"
     print(a)
