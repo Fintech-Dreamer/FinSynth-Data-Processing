@@ -32,7 +32,7 @@ python main.py
 
 2. 修改main的主程序（if \_\_name\_\_ == "\_\_main\_\_"）
 
-   - 初步运行（生成聊天机器人数据集）
+   - 初步运行（生成智能客服训练数据集）
 
        ```python
            file_converter = FileConverter(["demo.pdf"])
@@ -40,7 +40,7 @@ python main.py
            file_converter.json_lists_to_QA_pairs("chatbot", time_sleep=0, lable=10, embed_model_name="BAAI/bge-m3")
        ```
    
-   - 运行多个文件（生成聊天机器人数据集）
+   - 运行多个文件（生成智能客服训练数据集）
    
      ```python
          file_converter = FileConverter(["demo.pdf","demo.csv"])
@@ -94,7 +94,7 @@ python main.py
 
 ### 微调模型
 
-[聊天机器人](https://huggingface.co/Fintech-Dreamer/FinSynth_model_chatbot)
+[智能客服](https://huggingface.co/Fintech-Dreamer/FinSynth_model_chatbot)
 
 [欺诈检测](https://huggingface.co/Fintech-Dreamer/FinSynth_model_fraud)
 
@@ -108,7 +108,8 @@ python main.py
 
 - 用[Unstructured](https://docs.unstructured.io/welcome)先将非结构化文档分块存储到**json lists**
 - 利用大模型将每一块生成问答对最终存储到csv文件
-- **在生成聊天机器人时利用RAG技术增强生成，过程如下**
+- **在智能客服时利用RAG技术增强生成，过程如下**
   1. **先读取已经结构化的json lists，他是很多个分块的区域，将其进行基本的处理。**
   2. **先利用所有块生成所有问题。**
   3. **遍历每一个问题，然后选取相应的正文和上下lable（自定义参数）个文章切块，利用向量检索技术（RAG）找到和问题相应的知识背景，最终生成更优质的答案。**
+- **更多技术细节请咨询Fintech Dreamer 组织**
